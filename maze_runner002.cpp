@@ -21,6 +21,18 @@ enum CELL_TYPE {
     PATH, WALL
 };
 
+class Vec {
+    int x;
+    int y;
+    public:
+    Vec(int x = 0, int y = 0): x(x), y(y) {}
+    void setVec(int _x, int _y) {setX(_x); setY(_y);}
+    void setX(int _x) {x = _x;}
+    void setY(int _y) {y = _y;}
+    int getX() {return x;}
+    int getY() {return y;}
+};
+
 class Cell {
     CELL_TYPE type;
     bool isPathExists;
@@ -35,6 +47,7 @@ class Cell {
             return;
         }
         
+        char typeIcon = ' ';
         switch(type) {
             case START: typeIcon = 'S'; break;
             case END: typeIcon = 'E'; break;
@@ -47,46 +60,46 @@ class Cell {
 };
 
 class Maze {
-    int col;
-    int row;
+    Vec size;
     Cell maze[MAZE_MAX_SIZE][MAZE_MAX_SIZE];
     
     public:
-    Maze(int c = MAZE_MAX_SIZE, int r = MAZE_MAX_SIZE, CELL_TYPE _type = WALL) {
-        if (c > MAZE_MAX_SIZE || r > MAZE_MAX_SIZE) {
+    Maze(int x = MAZE_MAX_SIZE, int y = MAZE_MAX_SIZE, CELL_TYPE _type = WALL) {
+        if (x > MAZE_MAX_SIZE || y > MAZE_MAX_SIZE) {
             std::cout << "Maze size is beyond MAZE_MAX_SIZE";
             return;
         }
-        col = c;
-        row = r;
-        for(int i = 0; i < r; i++) 
-            for(int j = 0; j < c; j++)
-                this->setCell(j, i, _type);
+        size.setVec(x, y);
+        for(int i = 0; i < size.getY(); i++) 
+            for(int j = 0; j < size.getX(); j++)
+                this->setCell(Vec(j, i), _type);
     }
     
-    Cell getCell(int c, int r) {return maze[r][c];}
-    int getCol() {return col;}
-    int getRow() {return row;}
+    Cell getCell(Vec vec) {return maze[vec.getY()][vec.getX()];}
+    int getSizeX() {return size.getX();}
+    int getSizeY() {return size.getY();}
     
-    void setCell(int c, int r, CELL_TYPE _type) {
-        (&maze[r][c])->setType(_type);
+    void setCell(Vec vec, CELL_TYPE _type) {
+        (&maze[vec.getY()][vec.getX()])->setType(_type);
     }
     
     void print() {
-        for(int i = 0; i < row; i++) {
-            for(int j = 0; j < col; j++) {
-                this->getCell(j, i).print();
-                if(j + 1 < col) std::cout << ' ';
+        for(int i = 0; i < size.getY(); i++) {
+            for(int j = 0; j < size.getX(); j++) {
+                this->getCell(Vec(j, i)).print();
+                if(j + 1 < size.getX()) std::cout << ' ';
             }
             std::cout << std::endl;
         }
     }
+    
+    
 };
 
 void import(Maze& game, std::string b[]) {
     CELL_TYPE _type = NONE;
-    for(int i = 0; i < game.getRow(); i++)
-        for(int j = 0; j < game.getCol(); j++) {
+    for(int i = 0; i < game.getSizeY(); i++)
+        for(int j = 0; j < game.getSizeX(); j++) {
             switch(b[i][j]) {
                 case 'S': _type = START; break;
                 case 'E': _type = END; break;
@@ -94,7 +107,7 @@ void import(Maze& game, std::string b[]) {
                 case '#': _type = WALL; break;
                 default: _type = NONE; break;
             }
-            game.setCell(j, i, _type);
+            game.setCell(Vec(j, i), _type);
         }
 }
 
