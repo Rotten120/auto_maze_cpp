@@ -31,6 +31,8 @@ class Vec {
     void setY(int _y) {y = _y;}
     int getX() {return x;}
     int getY() {return y;}
+    Vec getSum(Vec vec2) {return Vec(x + vec2.getX(), y + vec2.getY());}
+    void add(Vec vec2) {x += vec2.getX(); y += vec2.getY();}
 };
 
 class Cell {
@@ -93,7 +95,19 @@ class Maze {
         }
     }
     
-    
+    void r(Vec dir, Vec pos int step) {
+        const int dirs = 4
+        enum DIR {RIGHT, LEFT, UP, DOWN};
+        Vec surr[dirs];
+        
+        if(pos.getX() > 0 &&) surr[RIGHT] = Vec(-1, 0);
+        if(pos.getX() + 1 < getSizeX()) surr[LEFT] = Vec(1, 0);
+        if(pos.getY() > 0) surr[UP] = Vec(0, -1);
+        if(pos.getY() + 1 < getSizeY()) surr[DOWN] = Vec(0, 1);
+        
+        for(int i = 0; i < dirs; i++)
+            surr[i].sum(pos);
+    }
 };
 
 void import(Maze& game, std::string b[]) {
