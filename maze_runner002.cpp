@@ -8,9 +8,9 @@ std::string board[MAZE_MAX_SIZE] = {
     "##########",
     "##########",
     "##########",
-    "####...E##",
+    "####..E###",
     "####.#####",
-    "####.#####",
+    "####...###",
     "####.#####",
     "####S#####",
     "##########"
@@ -102,6 +102,10 @@ class Maze {
         (&maze[vec.getY()][vec.getX()])->setType(_type);
     }
     
+    void setCellPath(Vec vec, bool _isPathExists) {
+        (&maze[vec.getY()][vec.getX()])->setPath(_isPathExists);
+    }
+    
     void print() {
         for(int i = 0; i < size.getY(); i++) {
             for(int j = 0; j < size.getX(); j++) {
@@ -112,57 +116,36 @@ class Maze {
         }
     }
     
-    bool r(Vec dir, Vec pos, int step) {
-        std::cout << "HECK YEAH!\n";
-        step++;
+    bool isOutofBounds(Vec pos) {
+        return (!(
+            pos.getX() > 0 || pos.getX() + 1 < getSizeX() ||
+            pos.getY() > 0 || pos.getY() + 1 < getSizeY()
+            ));
+    }
+    
+    bool __r(Vec dir, Vec pos) {
+        CELL_TYPE posType = CELL_TYPE(getCell(pos).getType());
+        if(posType == END) return true;
+        if (!(posType == PATH || posType == START)) return false;
+            
         const int dirs = 4;
-        enum DIR {RIGHT, LEFT, UP, DOWN};
-        Vec delta[dirs];
         bool pathExists = false;
         
-        /*
-        Cell currCell = getCell(pos);
-        if (currCell.getType() == PATH)
-            getCell(pos).setPath(true);
-        */
+        Vec delta[dirs] = {
+                Vec(-1, 0), Vec(1, 0),
+                Vec(0, -1), Vec(0, 1)
+            };
         
-        if(pos.getX() > 0) delta[RIGHT] = Vec(-1, 0);
-        if(pos.getX() + 1 < getSizeX()) delta[LEFT] = Vec(1, 0);
-        if(pos.getY() > 0) delta[UP] = Vec(0, -1);
-        if(pos.getY() + 1 < getSizeY()) delta[DOWN] = Vec(0, 1);
+        for(int idx = 0; idx < dirs; idx++) {
+            Vec targetCellPos = pos.getSum(delta[idx]);
+            if(isOutofBounds(targetCellPos) || delta[idx].getRev().isEqual(dir))
+                continue;
         
-        for(int i = 0; i < dirs; i++) {
-            /*
-            std::cout << "Delta: ";
-            delta[i].print();
-            std::cout << "Dir: ";
-            dir.print();
-            */
+            Cell targetCell = getCell(targetCellPos);
+            setCellPath(targetCellPos, true);
+            pathExists = true;
             
-            Vec surr = delta[i];
-            surr.add(pos);
-            
-            Cell targetCell = getCell(surr);
-            
-            /*
-            targetCell.printDeets();
-            std::cout << "Surr: ";
-            surr.print();
-            std::cout << "Pos: ";
-            pos.print();
-            std::cout << "--------\n";
-            */
-            
-            if(targetCell.getType() == END) {
-                return true;
-            }
-            
-            if(targetCell.getType() == PATH && !surr.isEqual(pos) && !dir.isEqual(delta[i].getRev())) {
-                pathExists = true;
-                (&maze[surr.getY()][surr.getX()])->setPath(true);
-                targetCell.setPath(true);
-                return r(delta[i], surr, step);
-            }
+            __r(delta[idx], targetCellPos);
         }
         
         return false;
@@ -188,6 +171,6 @@ int main() {
     Maze game;
     import(game, board);
     
-    game.r(Vec(0,-1), Vec(4, 8), 0);
+    game.__r(Vec(0,0), Vec(4, 8));
     game.print();
 }
