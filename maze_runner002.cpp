@@ -8,9 +8,9 @@ std::string board[MAZE_MAX_SIZE] = {
     "##########",
     "##########",
     "##########",
-    "####..E###",
+    "####.#E###",
     "####.#####",
-    "####...###",
+    "##.....###",
     "####.#####",
     "####S#####",
     "##########"
@@ -147,16 +147,6 @@ class Maze {
         if(posType == END) return true;
         if (!(posType == PATH || posType == START)) return false;
         
-        /*
-        std::cout << "DIR ";
-        dir.print();
-        std::cout << "POS ";
-        pos.print();
-        std::cout << "CELL\n";
-        getCell(pos).printDeets();
-        std::cout << "-------------------\n";
-        */
-        
         const int dirs = 4;
         bool pathExists[4] = {
             false, false, false, false
@@ -176,13 +166,15 @@ class Maze {
             setCellPath(targetCellPos, true);
             pathExists[idx] = true;
             
-            bool a = __r(delta[idx], targetCellPos);
-            if(!a)
-                setCellPath(targetCellPos, false);
+            if(!__r(delta[idx], targetCellPos)) {
                 pathExists[idx] = false;
+            }
         }
-        printbool(pathExists, dirs);
-    
+        
+        if (!orGate(pathExists, dirs)) {
+            setCellPath(pos, false);
+        }
+     
         return orGate(pathExists, dirs);
     }
 };
@@ -206,6 +198,9 @@ int main() {
     Maze game;
     import(game, board);
     
-    game.__r(Vec(0,0), Vec(4, 8));
-    game.print();
+    if(!game.__r(Vec(0,0), Vec(4, 8))) {
+        std::cout << "UNSOLVABLE";
+    } else {
+        game.print();
+    }
 }
