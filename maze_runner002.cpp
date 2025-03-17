@@ -57,7 +57,10 @@ class Cell {
             case WALL: typeIcon = "WALL"; break;
             default: typeIcon = "NONE"; break;    
         }
-        std::cout << "Type is: " << typeIcon << std::endl;   
+        std::cout << "Type is: " << typeIcon << std::endl; 
+        
+        if(isPathExists) std::cout << "PATH EXISTS\n";
+        else std::cout << "PATH DOES NOT EXISTS\n";
     }
     
     void print() {
@@ -123,13 +126,41 @@ class Maze {
             ));
     }
     
+    bool orGate(bool arr[], const int size) {
+        bool result = false;
+        
+        for(int i = 0; i < size; i++) {
+            result = result || arr[i];
+        }
+        
+        return result;
+    }
+    
+    void printbool(bool arr[], const int size) {
+        for(int i = 0; i < size; i++)
+            std::cout << arr[i];
+        std::cout << std::endl;
+    }
+    
     bool __r(Vec dir, Vec pos) {
         CELL_TYPE posType = CELL_TYPE(getCell(pos).getType());
         if(posType == END) return true;
         if (!(posType == PATH || posType == START)) return false;
-            
+        
+        /*
+        std::cout << "DIR ";
+        dir.print();
+        std::cout << "POS ";
+        pos.print();
+        std::cout << "CELL\n";
+        getCell(pos).printDeets();
+        std::cout << "-------------------\n";
+        */
+        
         const int dirs = 4;
-        bool pathExists = false;
+        bool pathExists[4] = {
+            false, false, false, false
+        };
         
         Vec delta[dirs] = {
                 Vec(-1, 0), Vec(1, 0),
@@ -143,12 +174,16 @@ class Maze {
         
             Cell targetCell = getCell(targetCellPos);
             setCellPath(targetCellPos, true);
-            pathExists = true;
+            pathExists[idx] = true;
             
-            __r(delta[idx], targetCellPos);
+            bool a = __r(delta[idx], targetCellPos);
+            if(!a)
+                setCellPath(targetCellPos, false);
+                pathExists[idx] = false;
         }
-        
-        return false;
+        printbool(pathExists, dirs);
+    
+        return orGate(pathExists, dirs);
     }
 };
 
