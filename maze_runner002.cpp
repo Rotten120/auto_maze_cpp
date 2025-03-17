@@ -6,10 +6,10 @@
 std::string board[MAZE_MAX_SIZE] = {
     "##########",
     "##########",
-    "##########",
-    "##########",
-    "####.#E###",
-    "####.#####",
+    "##.....###",
+    "##.###.###",
+    "##.#..E###",
+    "##.#.#.###",
     "##.....###",
     "####.#####",
     "####S#####",
@@ -20,6 +20,15 @@ enum CELL_TYPE {
     NONE, START, END,
     PATH, WALL
 };
+
+bool orGate(bool arr[], const int size) {
+    bool result = false;
+        
+    for(int i = 0; i < size; i++) {
+        result = result || arr[i];
+    }
+    return result;
+}
 
 class Vec {
     int x;
@@ -32,37 +41,21 @@ class Vec {
     int getX() {return x;}
     int getY() {return y;}
     Vec getSum(Vec vec2) {return Vec(x + vec2.getX(), y + vec2.getY());}
-    void add(Vec vec2) {x += vec2.getX(); y += vec2.getY();}
     bool isEqual(Vec vec2) {return (x == vec2.getX() && y == vec2.getY());}
     Vec getRev() {return Vec(-getX(), -getY());}
-    void print() {std::cout << "x: " << x << " | y: " << y << std::endl;}
 };
 
 class Cell {
     CELL_TYPE type;
     bool isPathExists;
-    public:
     
+    public:
     Cell(CELL_TYPE _type = NONE) : type(_type), isPathExists(false) {}
     int getType() {return type;}
     void setType(CELL_TYPE _type) {type = _type;}
     void setPath(bool _isPathExists) {isPathExists = _isPathExists;}
     bool isPath() {return isPathExists;}
-    void printDeets() {
-        std::string typeIcon = " ";
-        switch(type) {
-            case START: typeIcon = "START"; break;
-            case END: typeIcon = "END"; break;
-            case PATH: typeIcon = "PATH"; break;
-            case WALL: typeIcon = "WALL"; break;
-            default: typeIcon = "NONE"; break;    
-        }
-        std::cout << "Type is: " << typeIcon << std::endl; 
-        
-        if(isPathExists) std::cout << "PATH EXISTS\n";
-        else std::cout << "PATH DOES NOT EXISTS\n";
-    }
-    
+
     void print() {
         if(isPathExists and type == PATH) {
             std::cout << '*';
@@ -94,14 +87,14 @@ class Maze {
         size.setVec(x, y);
         for(int i = 0; i < size.getY(); i++) 
             for(int j = 0; j < size.getX(); j++)
-                this->setCell(Vec(j, i), _type);
+                this->setCellType(Vec(j, i), _type);
     }
     
     Cell getCell(Vec vec) {return maze[vec.getY()][vec.getX()];}
     int getSizeX() {return size.getX();}
     int getSizeY() {return size.getY();}
     
-    void setCell(Vec vec, CELL_TYPE _type) {
+    void setCellType(Vec vec, CELL_TYPE _type) {
         (&maze[vec.getY()][vec.getX()])->setType(_type);
     }
     
@@ -126,31 +119,36 @@ class Maze {
             ));
     }
     
-    bool orGate(bool arr[], const int size) {
-        bool result = false;
-        
-        for(int i = 0; i < size; i++) {
-            result = result || arr[i];
-        }
-        
-        return result;
-    }
-    
     void printbool(bool arr[], const int size) {
         for(int i = 0; i < size; i++)
             std::cout << arr[i];
         std::cout << std::endl;
     }
     
-    bool __r(Vec dir, Vec pos) {
+    bool findPathInit() {
+        Vec startPos();
+        Vec initDir();
+        
+        for(int i = 0; i < size.getY(); i++) {
+            for(int j = 0; j < size.getX(); j++) {
+                startPos = Vec(j, i);
+                if(getCell(startPos).getType == START) {
+                    return findPath(initDir, startPos);
+                }
+            }
+        }
+        
+        return false;
+    }
+    
+    bool findPath(Vec dir, Vec pos) {
         CELL_TYPE posType = CELL_TYPE(getCell(pos).getType());
+        
         if(posType == END) return true;
         if (!(posType == PATH || posType == START)) return false;
         
         const int dirs = 4;
-        bool pathExists[4] = {
-            false, false, false, false
-        };
+        bool pathExists[4] = {false, false, false, false};
         
         Vec delta[dirs] = {
                 Vec(-1, 0), Vec(1, 0),
@@ -166,16 +164,14 @@ class Maze {
             setCellPath(targetCellPos, true);
             pathExists[idx] = true;
             
-            if(!__r(delta[idx], targetCellPos)) {
+            if(!findPath(delta[idx], targetCellPos))
                 pathExists[idx] = false;
-            }
         }
         
-        if (!orGate(pathExists, dirs)) {
+        bool anyPathsExists = orGate(pathExists, dirs);
+        if (!anyPathsExists)
             setCellPath(pos, false);
-        }
-     
-        return orGate(pathExists, dirs);
+        return anyPathsExists;
     }
 };
 
@@ -190,7 +186,7 @@ void import(Maze& game, std::string b[]) {
                 case '#': _type = WALL; break;
                 default: _type = NONE; break;
             }
-            game.setCell(Vec(j, i), _type);
+            game.setCellType(Vec(j, i), _type);
         }
 }
 
@@ -198,7 +194,7 @@ int main() {
     Maze game;
     import(game, board);
     
-    if(!game.__r(Vec(0,0), Vec(4, 8))) {
+    if(!game.findPathInit()) {
         std::cout << "UNSOLVABLE";
     } else {
         game.print();
