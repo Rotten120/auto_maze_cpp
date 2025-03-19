@@ -2,7 +2,7 @@
 #include <vector>
 #include <fstream>
 
-#define MAZE_MAX_SIZE 10q	
+#define MAZE_MAX_SIZE 10	
 
 enum CELL_TYPE {
     NONE, START, END,
