@@ -1,20 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
 
 #define MAZE_MAX_SIZE 10
-
-std::string board[MAZE_MAX_SIZE] = {
-    "##########",
-    "##########",
-    "##.....###",
-    "##.###.###",
-    "##.#..E###",
-    "##.#######",
-    "##.....###",
-    "####.#####",
-    "####S#####",
-    "##########"
-};
 
 enum CELL_TYPE {
     NONE, START, END,
@@ -100,6 +88,8 @@ class Maze {
     }
 
     Cell getCell(Vec vec) {return maze[vec.getY()][vec.getX()];}
+    
+    void setSize(Vec vec) {size = vec;}
     int getSizeX() {return size.getX();}
     int getSizeY() {return size.getY();}
 
@@ -176,30 +166,55 @@ class Maze {
             setCellPath(pos, false);
         return anyPathsExists;
     }
-};
+    
+    void import(std::string filePath) {
+	   	std::ifstream fin;
+	   	CELL_TYPE _type = NONE;
+	   	std::string line;
+	   	char icon = ' ';
+	   	int colCount = 0, rowCount = 0;
 
-void import(Maze& game, std::string b[]) {
-    CELL_TYPE _type = NONE;
-    for(int i = 0; i < game.getSizeY(); i++)
-        for(int j = 0; j < game.getSizeX(); j++) {
-            switch(b[i][j]) {
-                case 'S': _type = START; break;
-                case 'E': _type = END; break;
-                case '.': _type = PATH; break;
-                case '#': _type = WALL; break;
-                default: _type = NONE; break;
-            }
-            game.setCellType(Vec(j, i), _type);
-        }
-}
+	   	fin.open(filePath);
+	   	
+	   	while(!fin.eof()) {
+	   		line.clear();
+	   		getline(fin, line);
+	   		colCount = 0;
+	   		
+	   		for(int idx = 0; idx < line.size(); idx++) {
+	   			icon = line[idx];
+	   			if(icon == ',') continue;
+	   			
+	   			_type = NONE;
+	   			switch(icon) {
+		   			case 'S': _type = START; break;
+	                case 'E': _type = END; break;
+	                case '.': _type = PATH; break;
+	                case '#': _type = WALL; break;
+	                default: _type = NONE; break;	
+				}
+				
+				setCellType(Vec(colCount, rowCount), _type);
+				colCount++;
+			}
+			
+			rowCount++;
+		}
+		
+		setSize(Vec(colCount, rowCount));
+		fin.close();
+	}
+};
 
 int main() {
     Maze game;
-    import(game, board);
+    game.import("hi.csv");
 
     if(!game.findPathInit()) {
         std::cout << "UNSOLVABLE";
     } else {
         game.print();
     }
+    
+    return 0;
 }
