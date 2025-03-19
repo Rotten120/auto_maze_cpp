@@ -2,7 +2,7 @@
 #include <vector>
 #include <fstream>
 
-#define MAZE_MAX_SIZE 10
+#define MAZE_MAX_SIZE 10q	
 
 enum CELL_TYPE {
     NONE, START, END,
@@ -206,9 +206,10 @@ class Maze {
 	}
 };
 
-int main() {
+int main(int argc, char* argv[]) {
     Maze game;
-    game.import("hi.csv");
+    std::string filePath = argv[1];
+    game.import(filePath);
 
     if(!game.findPathInit()) {
         std::cout << "UNSOLVABLE";
